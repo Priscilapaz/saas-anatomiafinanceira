@@ -1,63 +1,36 @@
 "use client"
 
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { HeaderStatus } from "@/components/visao-geral/header-status"
-import { DestaquesInteligentes } from "@/components/visao-geral/destaques-inteligentes"
-import { ProgressoMetas } from "@/components/visao-geral/progresso-metas"
-import { GraficoFluxo } from "@/components/visao-geral/grafico-fluxo"
-import { DistribuicaoGastos } from "@/components/visao-geral/distribuicao-gastos"
-import { InsightsSystem } from "@/components/visao-geral/insights-system"
-import { AlertsSection } from "@/components/alerts-section"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
-import Image from "next/image"
+import { PerfilSwitcher } from "@/components/perfil-switcher"
+import PainelFinanceiro from "@/components/painel-financeiro"
+import { usePerfil } from "@/contexts/perfil-context"
+import { Loader2 } from "lucide-react"
 
 export default function HomePage() {
+  const { isLoading } = usePerfil()
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-white">
-          <div className="flex items-center gap-2 px-3">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <div className="flex items-center gap-3">
-              <Image
-                src="/images/anatomia-logo.png"
-                alt="Anatomia Financeira"
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              <div>
-                <div className="text-sm text-gray-600">Boa tarde,</div>
-                <h1 className="text-lg font-bold text-gray-900">Priscila Ferreira!</h1>
-                <p className="text-sm text-gray-500">Visão Geral - Dashboard Financeiro</p>
-              </div>
-            </div>
+        {/* Header com switcher de perfil */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard Financeiro</h1>
+            <p className="text-gray-600">Gerencie suas finanças de forma inteligente</p>
           </div>
-        </header>
-
-        {/* Alertas Importantes */}
-        <AlertsSection />
-
-        {/* Cards de Status Financeiro */}
-        <HeaderStatus />
-
-        {/* Destaques Inteligentes */}
-        <DestaquesInteligentes />
-
-        {/* Progresso das Metas */}
-        <ProgressoMetas />
-
-        {/* Gráficos - Layout Responsivo */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <GraficoFluxo />
-          <DistribuicaoGastos />
+          <PerfilSwitcher />
         </div>
 
-        {/* Insights do Sistema */}
-        <InsightsSystem />
+        {/* Painel financeiro adaptativo */}
+        <PainelFinanceiro />
       </div>
     </DashboardLayout>
   )

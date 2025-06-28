@@ -2,81 +2,57 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Lightbulb, TrendingUp, TrendingDown, AlertCircle, CheckCircle } from "lucide-react"
+import { Lightbulb, TrendingUp, AlertCircle, CheckCircle } from "lucide-react"
 
-export function InsightsSystem() {
+export default function InsightsSystem() {
   const insights = [
     {
       tipo: "economia",
-      titulo: "Você economizou 18% a mais este mês!",
-      descricao: "Comparado ao mês anterior, seus gastos com alimentação diminuíram significativamente.",
-      impacto: "positivo",
-      valor: "R$ 420",
-      categoria: "Alimentação",
+      titulo: "Economia Excepcional!",
+      descricao: "Você economizou 18% a mais este mês comparado ao anterior",
+      valor: "R$ 624,00",
+      icon: <TrendingUp className="w-5 h-5" />,
+      cor: "text-green-600",
+      badge: "Positivo",
     },
     {
       tipo: "alerta",
-      titulo: "Gastos com transporte aumentaram 15%",
-      descricao: "Considere revisar seus deslocamentos ou buscar alternativas mais econômicas.",
-      impacto: "atencao",
-      valor: "R$ 180",
-      categoria: "Transporte",
+      titulo: "Atenção aos Gastos com Alimentação",
+      descricao: "Seus gastos com alimentação aumentaram 12% nas últimas 2 semanas",
+      valor: "R$ 280,00",
+      icon: <AlertCircle className="w-5 h-5" />,
+      cor: "text-orange-600",
+      badge: "Atenção",
+    },
+    {
+      tipo: "meta",
+      titulo: "Meta de Economia Quase Atingida",
+      descricao: "Faltam apenas R$ 500 para atingir sua meta mensal de economia",
+      valor: "83,3%",
+      icon: <CheckCircle className="w-5 h-5" />,
+      cor: "text-blue-600",
+      badge: "Progresso",
     },
     {
       tipo: "oportunidade",
-      titulo: "Meta de economia quase atingida!",
-      descricao: "Faltam apenas R$ 500 para atingir sua meta mensal. Você está no caminho certo!",
-      impacto: "positivo",
-      valor: "R$ 500",
-      categoria: "Metas",
-    },
-    {
-      tipo: "tendencia",
-      titulo: "Receitas em crescimento constante",
-      descricao: "Suas receitas cresceram 12% nos últimos 3 meses. Excelente progresso!",
-      impacto: "positivo",
-      valor: "R$ 1.680",
-      categoria: "Receitas",
+      titulo: "Oportunidade de Investimento",
+      descricao: "Com seu saldo atual, você pode investir em CDB com rendimento de 12% a.a.",
+      valor: "R$ 3.624",
+      icon: <Lightbulb className="w-5 h-5" />,
+      cor: "text-purple-600",
+      badge: "Dica",
     },
   ]
 
-  const getInsightIcon = (tipo: string) => {
-    switch (tipo) {
-      case "economia":
-        return <CheckCircle className="w-4 h-4 text-green-600" />
-      case "alerta":
-        return <AlertCircle className="w-4 h-4 text-yellow-600" />
-      case "oportunidade":
-        return <TrendingUp className="w-4 h-4 text-blue-600" />
-      case "tendencia":
-        return <TrendingUp className="w-4 h-4 text-purple-600" />
-      default:
-        return <Lightbulb className="w-4 h-4 text-gray-600" />
-    }
-  }
-
-  const getInsightColor = (impacto: string) => {
-    switch (impacto) {
-      case "positivo":
-        return "bg-green-50 border-green-200"
-      case "atencao":
-        return "bg-yellow-50 border-yellow-200"
-      case "neutro":
-        return "bg-blue-50 border-blue-200"
-      default:
-        return "bg-gray-50 border-gray-200"
-    }
-  }
-
-  const getBadgeColor = (tipo: string) => {
-    switch (tipo) {
-      case "economia":
+  const getBadgeColor = (badge: string) => {
+    switch (badge) {
+      case "Positivo":
         return "bg-green-100 text-green-800"
-      case "alerta":
-        return "bg-yellow-100 text-yellow-800"
-      case "oportunidade":
+      case "Atenção":
+        return "bg-orange-100 text-orange-800"
+      case "Progresso":
         return "bg-blue-100 text-blue-800"
-      case "tendencia":
+      case "Dica":
         return "bg-purple-100 text-purple-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -86,32 +62,63 @@ export function InsightsSystem() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Lightbulb className="w-5 h-5 text-yellow-600" />
+        <CardTitle className="text-xl flex items-center">
+          <Lightbulb className="w-6 h-6 mr-2 text-yellow-600" />
           Insights do Sistema
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {insights.map((insight, index) => (
-            <div key={index} className={`p-4 rounded-lg border ${getInsightColor(insight.impacto)}`}>
-              <div className="flex items-start gap-3">
-                {getInsightIcon(insight.tipo)}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-medium text-sm">{insight.titulo}</h4>
-                    <Badge className={`text-xs ${getBadgeColor(insight.tipo)}`}>{insight.categoria}</Badge>
-                  </div>
-                  <p className="text-xs text-gray-600 mb-2">{insight.descricao}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-gray-900">{insight.valor}</span>
-                    {insight.impacto === "positivo" && <TrendingUp className="w-4 h-4 text-green-500" />}
-                    {insight.impacto === "atencao" && <TrendingDown className="w-4 h-4 text-yellow-500" />}
-                  </div>
+            <div key={index} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between mb-3">
+                <div className={`p-2 rounded-lg bg-gray-50 ${insight.cor}`}>{insight.icon}</div>
+                <Badge className={getBadgeColor(insight.badge)}>{insight.badge}</Badge>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-semibold text-gray-900">{insight.titulo}</h3>
+                <p className="text-sm text-gray-600">{insight.descricao}</p>
+                <div className="flex items-center justify-between pt-2">
+                  <span className={`font-bold text-lg ${insight.cor}`}>{insight.valor}</span>
+                  {insight.tipo === "economia" && (
+                    <div className="flex items-center text-sm text-green-600">
+                      <TrendingUp className="w-3 h-3 mr-1" />
+                      +18%
+                    </div>
+                  )}
+                  {insight.tipo === "alerta" && (
+                    <div className="flex items-center text-sm text-orange-600">
+                      <TrendingUp className="w-3 h-3 mr-1" />
+                      +12%
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Resumo dos Insights */}
+        <div className="mt-6 pt-4 border-t">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <p className="text-sm text-gray-600">Insights Positivos</p>
+              <p className="text-2xl font-bold text-green-600">2</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Alertas</p>
+              <p className="text-2xl font-bold text-orange-600">1</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Oportunidades</p>
+              <p className="text-2xl font-bold text-purple-600">1</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Score Financeiro</p>
+              <p className="text-2xl font-bold text-blue-600">8.5</p>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

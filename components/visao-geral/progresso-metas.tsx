@@ -2,91 +2,69 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Target, TrendingUp } from "lucide-react"
+import { Target, Calendar, TrendingUp } from "lucide-react"
 
-export function ProgressoMetas() {
+export default function ProgressoMetas() {
   const metas = [
     {
-      nome: "Meta de Economia Mensal",
+      nome: "Economia Mensal",
       atual: 2500,
       objetivo: 3000,
       percentual: 83.3,
-      status: "em-andamento",
-      prazo: "Faltam 5 dias",
+      prazo: "15 dias restantes",
+      cor: "bg-green-500",
+    },
+    {
+      nome: "Redução de Gastos",
+      atual: 11656,
+      objetivo: 10000,
+      percentual: 85.7,
+      prazo: "Meta para Dezembro",
+      cor: "bg-orange-500",
     },
     {
       nome: "Reserva de Emergência",
-      atual: 12580,
-      objetivo: 50000,
-      percentual: 25.2,
-      status: "em-andamento",
-      prazo: "Meta anual",
-    },
-    {
-      nome: "Viagem Europa",
-      atual: 3200,
-      objetivo: 15000,
-      percentual: 21.3,
-      status: "em-andamento",
-      prazo: "Dezembro 2025",
-    },
-    {
-      nome: "Carro Novo",
-      atual: 8500,
-      objetivo: 45000,
-      percentual: 18.9,
-      status: "em-andamento",
-      prazo: "Junho 2026",
+      atual: 15000,
+      objetivo: 20000,
+      percentual: 75,
+      prazo: "6 meses restantes",
+      cor: "bg-blue-500",
     },
   ]
 
-  const getStatusColor = (percentual: number) => {
-    if (percentual >= 80) return "text-green-600"
-    if (percentual >= 50) return "text-yellow-600"
-    return "text-red-600"
-  }
-
-  const getProgressColor = (percentual: number) => {
-    if (percentual >= 80) return "bg-green-500"
-    if (percentual >= 50) return "bg-yellow-500"
-    return "bg-red-500"
-  }
-
   return (
-    <Card>
+    <Card className="mb-6">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-purple-600" />
-          Progresso das Metas Financeiras
+        <CardTitle className="text-xl flex items-center">
+          <Target className="w-6 h-6 mr-2 text-blue-600" />
+          Progresso das Metas
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {metas.map((meta, index) => (
-            <div key={index} className="space-y-3 p-4 border rounded-lg bg-gray-50">
+            <div key={index} className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">{meta.nome}</h4>
-                <div className="flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3 text-green-500" />
-                  <span className={`text-sm font-bold ${getStatusColor(meta.percentual)}`}>
-                    {meta.percentual.toFixed(1)}%
-                  </span>
-                </div>
+                <h3 className="font-medium">{meta.nome}</h3>
+                <span className="text-sm text-gray-600 flex items-center">
+                  <Calendar className="w-3 h-3 mr-1" />
+                  {meta.prazo}
+                </span>
               </div>
 
               <div className="space-y-2">
-                <Progress value={meta.percentual} className="h-2" />
-                <div className="flex justify-between text-xs text-gray-600">
+                <div className="flex justify-between text-sm">
                   <span>R$ {meta.atual.toLocaleString("pt-BR")}</span>
                   <span>R$ {meta.objetivo.toLocaleString("pt-BR")}</span>
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">{meta.prazo}</span>
-                <span className="text-xs font-medium text-gray-700">
-                  Faltam R$ {(meta.objetivo - meta.atual).toLocaleString("pt-BR")}
-                </span>
+                <Progress value={meta.percentual} className="h-3" />
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{meta.percentual.toFixed(1)}% concluído</span>
+                  <div className="flex items-center text-sm text-green-600">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    No prazo
+                  </div>
+                </div>
               </div>
             </div>
           ))}

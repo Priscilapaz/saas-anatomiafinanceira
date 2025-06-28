@@ -1,96 +1,52 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { AlertTriangle, TrendingUp, TrendingDown, Star } from "lucide-react"
+import { AlertTriangle, TrendingUp, Home, Car, Utensils } from "lucide-react"
 
-export function DestaquesInteligentes() {
+export default function DestaquesInteligentes() {
   const topGastos = [
-    { categoria: "Moradia", valor: 4068, percentual: 34.9, trend: "stable" },
-    { categoria: "Alimentação", valor: 2331, percentual: 20.0, trend: "up" },
-    { categoria: "Transporte", valor: 1166, percentual: 10.0, trend: "down" },
+    { categoria: "Moradia", valor: "R$ 4.079,60", percentual: "35%", icon: <Home className="w-4 h-4" /> },
+    { categoria: "Alimentação", valor: "R$ 2.331,20", percentual: "20%", icon: <Utensils className="w-4 h-4" /> },
+    { categoria: "Transporte", valor: "R$ 1.165,60", percentual: "10%", icon: <Car className="w-4 h-4" /> },
   ]
 
   const topReceitas = [
-    { fonte: "Salário Principal", valor: 8500, percentual: 55.6, trend: "stable" },
-    { fonte: "Freelances", valor: 4200, percentual: 27.5, trend: "up" },
-    { fonte: "Investimentos", valor: 2580, percentual: 16.9, trend: "up" },
+    { fonte: "Salário Principal", valor: "R$ 12.000,00", percentual: "78%" },
+    { fonte: "Freelances", valor: "R$ 2.280,00", percentual: "15%" },
+    { fonte: "Investimentos", valor: "R$ 1.000,00", percentual: "7%" },
   ]
 
   const alertas = [
-    {
-      tipo: "warning",
-      titulo: "Meta de Economia",
-      descricao: "Faltam R$ 500 para atingir a meta mensal",
-      urgencia: "media",
-    },
+    { tipo: "warning", mensagem: "Meta de economia 83% atingida", icon: <AlertTriangle className="w-4 h-4" /> },
     {
       tipo: "success",
-      titulo: "Gastos Controlados",
-      descricao: "Alimentação 15% abaixo da média",
-      urgencia: "baixa",
+      mensagem: "Gastos com alimentação -15% vs mês anterior",
+      icon: <TrendingUp className="w-4 h-4" />,
     },
-    {
-      tipo: "info",
-      titulo: "Oportunidade",
-      descricao: "Receitas 12% acima do mês anterior",
-      urgencia: "baixa",
-    },
+    { tipo: "info", mensagem: "Próximo vencimento: Cartão em 5 dias", icon: <AlertTriangle className="w-4 h-4" /> },
   ]
 
-  const getAlertIcon = (tipo: string) => {
-    switch (tipo) {
-      case "warning":
-        return <AlertTriangle className="w-4 h-4 text-yellow-600" />
-      case "success":
-        return <TrendingUp className="w-4 h-4 text-green-600" />
-      case "info":
-        return <Star className="w-4 h-4 text-blue-600" />
-      default:
-        return <AlertTriangle className="w-4 h-4 text-gray-600" />
-    }
-  }
-
-  const getAlertColor = (tipo: string) => {
-    switch (tipo) {
-      case "warning":
-        return "bg-yellow-50 border-yellow-200"
-      case "success":
-        return "bg-green-50 border-green-200"
-      case "info":
-        return "bg-blue-50 border-blue-200"
-      default:
-        return "bg-gray-50 border-gray-200"
-    }
-  }
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       {/* Top 3 Gastos */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <TrendingDown className="w-4 h-4 text-red-600" />
-            Maiores Gastos
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center">
+            <TrendingUp className="w-5 h-5 mr-2 text-red-600" />
+            Top 3 Gastos
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {topGastos.map((item, index) => (
+          {topGastos.map((gasto, index) => (
             <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-sm">{item.categoria}</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {item.percentual}%
-                  </Badge>
+              <div className="flex items-center">
+                <div className="p-2 bg-red-100 rounded-lg text-red-600 mr-3">{gasto.icon}</div>
+                <div>
+                  <p className="font-medium">{gasto.categoria}</p>
+                  <p className="text-sm text-gray-600">{gasto.percentual} do total</p>
                 </div>
-                <div className="text-lg font-bold text-red-600">R$ {item.valor.toLocaleString("pt-BR")}</div>
               </div>
-              <div className="text-right">
-                {item.trend === "up" && <TrendingUp className="w-4 h-4 text-red-500" />}
-                {item.trend === "down" && <TrendingDown className="w-4 h-4 text-green-500" />}
-                {item.trend === "stable" && <div className="w-4 h-4" />}
-              </div>
+              <p className="font-bold text-red-600">{gasto.valor}</p>
             </div>
           ))}
         </CardContent>
@@ -98,52 +54,48 @@ export function DestaquesInteligentes() {
 
       {/* Top 3 Receitas */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-green-600" />
-            Principais Receitas
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center">
+            <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
+            Top 3 Receitas
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {topReceitas.map((item, index) => (
+          {topReceitas.map((receita, index) => (
             <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-sm">{item.fonte}</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {item.percentual}%
-                  </Badge>
-                </div>
-                <div className="text-lg font-bold text-green-600">R$ {item.valor.toLocaleString("pt-BR")}</div>
+              <div>
+                <p className="font-medium">{receita.fonte}</p>
+                <p className="text-sm text-gray-600">{receita.percentual} do total</p>
               </div>
-              <div className="text-right">
-                {item.trend === "up" && <TrendingUp className="w-4 h-4 text-green-500" />}
-                {item.trend === "down" && <TrendingDown className="w-4 h-4 text-red-500" />}
-                {item.trend === "stable" && <div className="w-4 h-4" />}
-              </div>
+              <p className="font-bold text-green-600">{receita.valor}</p>
             </div>
           ))}
         </CardContent>
       </Card>
 
-      {/* Alertas Visuais */}
+      {/* Alertas */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-yellow-600" />
-            Alertas Inteligentes
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center">
+            <AlertTriangle className="w-5 h-5 mr-2 text-orange-600" />
+            Alertas Importantes
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {alertas.map((alerta, index) => (
-            <div key={index} className={`p-3 rounded-lg border ${getAlertColor(alerta.tipo)}`}>
-              <div className="flex items-start gap-2">
-                {getAlertIcon(alerta.tipo)}
-                <div className="flex-1">
-                  <h4 className="font-medium text-sm mb-1">{alerta.titulo}</h4>
-                  <p className="text-xs text-gray-600">{alerta.descricao}</p>
-                </div>
+            <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg">
+              <div
+                className={`p-1 rounded mr-3 ${
+                  alerta.tipo === "warning"
+                    ? "bg-orange-100 text-orange-600"
+                    : alerta.tipo === "success"
+                      ? "bg-green-100 text-green-600"
+                      : "bg-blue-100 text-blue-600"
+                }`}
+              >
+                {alerta.icon}
               </div>
+              <p className="text-sm flex-1">{alerta.mensagem}</p>
             </div>
           ))}
         </CardContent>
