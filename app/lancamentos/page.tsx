@@ -1,247 +1,233 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useCallback } from "react"
+import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CalendarIcon, Search, Plus, Edit, Trash2, TrendingUp, TrendingDown, DollarSign } from "lucide-react"
-import { DashboardLayout } from "@/components/dashboard-layout"
+import { Badge } from "@/components/ui/badge"
 import { NovoLancamentoModal } from "@/components/novo-lancamento-modal"
 import { EditarLancamentoModal } from "@/components/editar-lancamento-modal"
 import { ConfirmarExclusaoModal } from "@/components/confirmar-exclusao-modal"
-import { usePerfil } from "@/contexts/perfil-context"
+import { Plus, Search, Filter, Edit, Trash2, TrendingUp, TrendingDown } from "lucide-react"
+import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
 
-interface Lancamento {
+interface Transaction {
   id: string
-  data: string
-  descricao: string
-  categoria: string
-  valor: number
-  tipo: "receita" | "despesa" | "transferencia"
-  conta?: string
-  observacoes?: string
-  perfil: string
+  description: string
+  amount: number
+  type: "receita" | "despesa"
+  category: string
+  date: Date
+  account: string
+  status: "pago" | "pendente" | "cancelado"
+  notes?: string
 }
 
+// Dados de exemplo
+const SAMPLE_TRANSACTIONS: Transaction[] = [
+  {
+    id: "1",
+    description: "Salário",
+    amount: 8500,
+    type: "receita",
+    category: "Salário",
+    date: new Date(2025, 5, 1),
+    account: "Conta Corrente",
+    status: "pago",
+  },
+  {
+    id: "2",
+    description: "Supermercado",
+    amount: 450,
+    type: "despesa",
+    category: "Alimentação",
+    date: new Date(2025, 5, 15),
+    account: "Cartão de Crédito",
+    status: "pago",
+  },
+  {
+    id: "3",
+    description: "Consulta médica",
+    amount: 200,
+    type: "despesa",
+    category: "Saúde",
+    date: new Date(2025, 5, 20),
+    account: "Conta Corrente",
+    status: "pendente",
+  },
+  {
+    id: "4",
+    description: "Freelance",
+    amount: 1200,
+    type: "receita",
+    category: "Trabalho Extra",
+    date: new Date(2025, 5, 25),
+    account: "Conta Corrente",
+    status: "pago",
+  },
+]
+
 export default function LancamentosPage() {
-  const { perfilAtivo } = usePerfil()
-  const [lancamentos, setLancamentos] = useState<Lancamento[]>([])
-  const [filtroTipo, setFiltroTipo] = useState<string>("todos")
-  const [filtroCategoria, setFiltroCategoria] = useState<string>("todas")
-  const [termoBusca, setTermoBusca] = useState("")
-  const [showNovoLancamento, setShowNovoLancamento] = useState(false)
-  const [showEditarLancamento, setShowEditarLancamento] = useState(false)
-  const [showConfirmarExclusao, setShowConfirmarExclusao] = useState(false)
-  const [lancamentoSelecionado, setLancamentoSelecionado] = useState<Lancamento | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [transactions, setTransactions] = useState<Transaction[]>(SAMPLE_TRANSACTIONS)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterType, setFilterType] = useState<string>("todos")
+  const [filterCategory, setFilterCategory] = useState<string>("todas")
 
-  // Dados simulados
-  const lancamentosSimulados: Lancamento[] = [
-    {
-      id: "1",
-      data: "2024-01-15",
-      descricao: "Salário",
-      categoria: "Salário",
-      valor: 5000,
-      tipo: "receita",
-      conta: "Conta Corrente",
-      perfil: "pessoal",
-    },
-    {
-      id: "2",
-      data: "2024-01-16",
-      descricao: "Supermercado",
-      categoria: "Alimentação",
-      valor: 250,
-      tipo: "despesa",
-      conta: "Cartão de Crédito",
-      perfil: "pessoal",
-    },
-    {
-      id: "3",
-      data: "2024-01-17",
-      descricao: "Consulta Médica",
-      categoria: "Saúde",
-      valor: 150,
-      tipo: "despesa",
-      conta: "Conta Corrente",
-      perfil: "pessoal",
-    },
-    {
-      id: "4",
-      data: "2024-01-18",
-      descricao: "Consulta Particular",
-      categoria: "Consultório",
-      valor: 300,
-      tipo: "receita",
-      conta: "Conta Corrente",
-      perfil: "profissional",
-    },
-    {
-      id: "5",
-      data: "2024-01-19",
-      descricao: "Material Médico",
-      categoria: "Equipamentos",
-      valor: 800,
-      tipo: "despesa",
-      conta: "Cartão de Crédito",
-      perfil: "profissional",
-    },
-  ]
-
-  const carregarLancamentos = async () => {
-    setLoading(true)
-    try {
-      // Simular carregamento
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Filtrar por perfil
-      const lancamentosFiltrados = lancamentosSimulados.filter((lancamento) => lancamento.perfil === perfilAtivo)
-
-      setLancamentos(lancamentosFiltrados)
-    } catch (error) {
-      console.error("Erro ao carregar lançamentos:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    carregarLancamentos()
-  }, [perfilAtivo])
-
-  const lancamentosFiltrados = lancamentos.filter((lancamento) => {
-    const matchTipo = filtroTipo === "todos" || lancamento.tipo === filtroTipo
-    const matchCategoria = filtroCategoria === "todas" || lancamento.categoria === filtroCategoria
-    const matchBusca =
-      lancamento.descricao.toLowerCase().includes(termoBusca.toLowerCase()) ||
-      lancamento.categoria.toLowerCase().includes(termoBusca.toLowerCase())
-
-    return matchTipo && matchCategoria && matchBusca
+  // Filtrar transações
+  const filteredTransactions = transactions.filter((transaction) => {
+    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = filterType === "todos" || transaction.type === filterType
+    const matchesCategory = filterCategory === "todas" || transaction.category === filterCategory
+    return matchesSearch && matchesType && matchesCategory
   })
 
-  const totalReceitas = lancamentos.filter((l) => l.tipo === "receita").reduce((acc, l) => acc + l.valor, 0)
+  // Calcular totais
+  const totalReceitas = filteredTransactions.filter((t) => t.type === "receita").reduce((sum, t) => sum + t.amount, 0)
 
-  const totalDespesas = lancamentos.filter((l) => l.tipo === "despesa").reduce((acc, l) => acc + l.valor, 0)
+  const totalDespesas = filteredTransactions.filter((t) => t.type === "despesa").reduce((sum, t) => sum + t.amount, 0)
 
   const saldo = totalReceitas - totalDespesas
 
-  const categorias = Array.from(new Set(lancamentos.map((l) => l.categoria)))
-
-  const handleNovoLancamento = () => {
-    setShowNovoLancamento(true)
+  const handleAddTransaction = (newTransaction: Omit<Transaction, "id">) => {
+    const transaction: Transaction = {
+      ...newTransaction,
+      id: Date.now().toString(),
+    }
+    setTransactions([transaction, ...transactions])
   }
 
-  const handleEditarLancamento = (lancamento: Lancamento) => {
-    setLancamentoSelecionado(lancamento)
-    setShowEditarLancamento(true)
+  const handleEditTransaction = (transaction: Transaction) => {
+    setSelectedTransaction(transaction)
+    setIsEditModalOpen(true)
   }
 
-  const handleExcluirLancamento = (lancamento: Lancamento) => {
-    setLancamentoSelecionado(lancamento)
-    setShowConfirmarExclusao(true)
+  const handleSaveTransaction = (updatedTransaction: Transaction) => {
+    setTransactions(transactions.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t)))
   }
 
-  const handleLancamentoSalvo = (novoLancamento: any) => {
-    console.log("Lançamento salvo:", novoLancamento)
-    carregarLancamentos()
+  const handleDeleteTransaction = (transaction: Transaction) => {
+    setSelectedTransaction(transaction)
+    setIsDeleteModalOpen(true)
   }
 
-  const handleLancamentoEditado = (lancamentoEditado: Lancamento) => {
-    setLancamentos((prev) => prev.map((l) => (l.id === lancamentoEditado.id ? lancamentoEditado : l)))
+  const handleConfirmDelete = (transactionId: string) => {
+    setTransactions(transactions.filter((t) => t.id !== transactionId))
   }
 
-  const handleLancamentoExcluido = (id: string) => {
-    setLancamentos((prev) => prev.filter((l) => l.id !== id))
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      pago: "default",
+      pendente: "secondary",
+      cancelado: "destructive",
+    } as const
+
+    return <Badge variant={variants[status as keyof typeof variants]}>{status}</Badge>
   }
 
-  const formatarValor = (valor: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(valor)
-  }
-
-  const formatarData = (data: string) => {
-    return new Date(data + "T00:00:00").toLocaleDateString("pt-BR")
-  }
+  const categories = Array.from(new Set(transactions.map((t) => t.category)))
 
   // BOTÃO DE TESTE TEMPORÁRIO
-  const testarLancamento = async () => {
+  const handleTestLancamento = useCallback(async () => {
     try {
       const response = await fetch("/api/lancamentos", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           description: "Teste direto no botão",
-          amount: 123.45,
+          value: 123.45,
           date: new Date().toISOString(),
         }),
       })
 
       const result = await response.json()
-      console.log("Resposta da API:", result)
+      console.log("Response:", result)
       alert("Lançamento enviado!")
     } catch (error) {
-      console.error("Erro ao testar lançamento:", error)
-      alert("Erro ao enviar lançamento: " + error.message)
+      console.error("Erro ao enviar lançamento:", error)
+      alert("Erro ao enviar lançamento")
     }
-  }
+  }, [])
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Lançamentos</h1>
-            <p className="text-gray-600">
-              Gerencie suas{" "}
-              {perfilAtivo === "pessoal" ? "receitas e despesas pessoais" : "receitas e custos profissionais"}
-            </p>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-white">
+          <div className="flex items-center gap-2 px-3">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <h1 className="text-xl font-bold">Lançamentos</h1>
           </div>
-          <Button onClick={handleNovoLancamento} className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Lançamento
-          </Button>
-        </div>
+          <div className="ml-auto px-3">
+            <Button onClick={() => setIsModalOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Lançamento
+            </Button>
+          </div>
+        </header>
 
-        {/* Cards de Resumo */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Resumo */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {perfilAtivo === "pessoal" ? "Receitas" : "Faturamento"}
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{formatarValor(totalReceitas)}</div>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Total Receitas</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {totalReceitas.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-green-600" />
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{perfilAtivo === "pessoal" ? "Despesas" : "Custos"}</CardTitle>
-              <TrendingDown className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{formatarValor(totalDespesas)}</div>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Total Despesas</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {totalDespesas.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </p>
+                </div>
+                <TrendingDown className="h-8 w-8 text-red-600" />
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Saldo</CardTitle>
-              <DollarSign className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${saldo >= 0 ? "text-blue-600" : "text-red-600"}`}>
-                {formatarValor(saldo)}
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Saldo</p>
+                  <p className={`text-2xl font-bold ${saldo >= 0 ? "text-blue-600" : "text-red-600"}`}>
+                    {saldo.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </p>
+                </div>
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                    saldo >= 0 ? "bg-blue-100" : "bg-red-100"
+                  }`}
+                >
+                  {saldo >= 0 ? "+" : "-"}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -250,138 +236,116 @@ export default function LancamentosPage() {
         {/* Filtros */}
         <Card>
           <CardHeader>
-            <CardTitle>Filtros</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Buscar</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar por descrição..."
-                    value={termoBusca}
-                    onChange={(e) => setTermoBusca(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por descrição..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Tipo</label>
-                <Select value={filtroTipo} onValueChange={setFiltroTipo}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
-                    <SelectItem value="receita">{perfilAtivo === "pessoal" ? "Receitas" : "Faturamento"}</SelectItem>
-                    <SelectItem value="despesa">{perfilAtivo === "pessoal" ? "Despesas" : "Custos"}</SelectItem>
-                    <SelectItem value="transferencia">Transferências</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os tipos</SelectItem>
+                  <SelectItem value="receita">Receitas</SelectItem>
+                  <SelectItem value="despesa">Despesas</SelectItem>
+                </SelectContent>
+              </Select>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Categoria</label>
-                <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todas">Todas</SelectItem>
-                    {categorias.map((categoria) => (
-                      <SelectItem key={categoria} value={categoria}>
-                        {categoria}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Período</label>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  Este mês
-                </Button>
-              </div>
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as categorias</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
 
-        {/* Lista de Lançamentos */}
+        {/* Lista de Transações */}
         <Card>
           <CardHeader>
-            <CardTitle>Lançamentos</CardTitle>
+            <CardTitle>Transações Recentes ({filteredTransactions.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-16 bg-gray-200 rounded"></div>
-                  </div>
-                ))}
-              </div>
-            ) : lancamentosFiltrados.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>Nenhum lançamento encontrado.</p>
-                <Button onClick={handleNovoLancamento} className="mt-4">
-                  Criar primeiro lançamento
-                </Button>
+            {filteredTransactions.length === 0 ? (
+              <div className="py-8 text-center text-gray-500">
+                <p>Nenhuma transação encontrada</p>
+                <p className="text-sm">Tente ajustar os filtros ou adicione uma nova transação</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {lancamentosFiltrados.map((lancamento) => (
+                {filteredTransactions.map((transaction) => (
                   <div
-                    key={lancamento.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                    key={transaction.id}
+                    className="flex items-center justify-between rounded-lg border p-4 hover:bg-gray-50"
                   >
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-medium">{lancamento.descricao}</h3>
-                          <Badge
-                            variant="outline"
-                            className={
-                              lancamento.tipo === "receita"
-                                ? "text-green-600"
-                                : lancamento.tipo === "despesa"
-                                  ? "text-red-600"
-                                  : "text-blue-600"
-                            }
-                          >
-                            {lancamento.tipo}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {lancamento.categoria} • {formatarData(lancamento.data)}
-                          {lancamento.conta && ` • ${lancamento.conta}`}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`h-3 w-3 rounded-full ${
+                            transaction.type === "receita" ? "bg-green-500" : "bg-red-500"
+                          }`}
+                        />
+                        <div>
+                          <h3 className="font-medium">{transaction.description}</h3>
+                          <p className="text-sm text-gray-600">
+                            {transaction.category} • {transaction.account} •{" "}
+                            {transaction.date.toLocaleDateString("pt-BR")}
+                          </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`text-lg font-bold ${
-                          lancamento.tipo === "receita"
-                            ? "text-green-600"
-                            : lancamento.tipo === "despesa"
-                              ? "text-red-600"
-                              : "text-blue-600"
-                        }`}
-                      >
-                        {lancamento.tipo === "despesa" ? "-" : "+"}
-                        {formatarValor(lancamento.valor)}
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p
+                          className={`font-bold ${transaction.type === "receita" ? "text-green-600" : "text-red-600"}`}
+                        >
+                          {transaction.type === "receita" ? "+" : "-"}
+                          {transaction.amount.toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          })}
+                        </p>
+                        {getStatusBadge(transaction.status)}
                       </div>
 
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline" onClick={() => handleEditarLancamento(lancamento)}>
-                          <Edit className="w-4 h-4" />
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditTransaction(transaction)}
+                          className="text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                        >
+                          <Edit className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleExcluirLancamento(lancamento)}>
-                          <Trash2 className="w-4 h-4" />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteTransaction(transaction)}
+                          className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -393,37 +357,30 @@ export default function LancamentosPage() {
         </Card>
 
         {/* BOTÃO DE TESTE TEMPORÁRIO */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">🧪 Área de Desenvolvimento</p>
-            <Button onClick={testarLancamento} className="bg-blue-600 text-white hover:bg-blue-700">
-              Testar Lançamento
-            </Button>
-            <p className="text-xs text-gray-500 mt-1">Envia POST para /api/lancamentos com dados de teste</p>
-          </div>
+        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4">
+          <p className="mb-2 text-sm text-gray-600">🧪 Área de desenvolvimento</p>
+          <Button onClick={handleTestLancamento} className="bg-blue-600 text-white hover:bg-blue-700">
+            Testar Lançamento
+          </Button>
         </div>
-
-        {/* Modais */}
-        <NovoLancamentoModal
-          isOpen={showNovoLancamento}
-          onClose={() => setShowNovoLancamento(false)}
-          onSave={handleLancamentoSalvo}
-        />
-
-        <EditarLancamentoModal
-          isOpen={showEditarLancamento}
-          onClose={() => setShowEditarLancamento(false)}
-          lancamento={lancamentoSelecionado}
-          onSave={handleLancamentoEditado}
-        />
-
-        <ConfirmarExclusaoModal
-          isOpen={showConfirmarExclusao}
-          onClose={() => setShowConfirmarExclusao(false)}
-          lancamento={lancamentoSelecionado}
-          onConfirm={handleLancamentoExcluido}
-        />
       </div>
+
+      {/* Modais */}
+      <NovoLancamentoModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleAddTransaction} />
+
+      <EditarLancamentoModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        transaction={selectedTransaction}
+        onSave={handleSaveTransaction}
+      />
+
+      <ConfirmarExclusaoModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        transaction={selectedTransaction}
+        onConfirm={handleConfirmDelete}
+      />
     </DashboardLayout>
   )
 }
